@@ -1,0 +1,112 @@
+Sub highlight()
+    Dim xRg1 As Range
+    Dim xRg2 As Range
+    Dim xTxt As String
+    Dim xCell1 As Range
+    Dim xCell2 As Range
+    Dim i As Long
+    Dim J As Integer
+    Dim T As Integer
+    Dim xDiffs As Boolean
+    
+    Dim stringSetA() As String
+    Dim stringSetB() As String
+    Dim stringSetATempStr As String
+    Dim stringSetBTempStr As String
+    Dim stringArrayOfSetATempStr() As String
+    Dim wordMatchIndex As Integer
+    Dim exactCursorPosition As Integer
+    Dim lastWordMatchIndex As Integer
+    Dim isun As Integer
+   ' Dim word As String
+    
+    On Error Resume Next
+    If ActiveWindow.RangeSelection.Count > 1 Then
+      xTxt = ActiveWindow.RangeSelection.AddressLocal
+    Else
+      xTxt = ActiveSheet.UsedRange.AddressLocal
+    End If
+lOne:
+    Set xRg1 = Application.InputBox("Range A:", "Kutools for Excel", xTxt, , , , , 8)
+ '   If xRg1 Is Nothing Then Exit Sub
+  '  If xRg1.Columns.Count > 1 Or xRg1.Areas.Count > 1 Then
+  '      MsgBox "Multiple ranges or columns have been selected ", vbInformation, "Kutools for Excel"
+  '      GoTo lOne
+  '  End If
+lTwo:
+    Set xRg2 = Application.InputBox("Range B:", "Kutools for Excel", "", , , , , 8)
+  '  If xRg2 Is Nothing Then Exit Sub
+  '  If xRg2.Columns.Count > 1 Or xRg2.Areas.Count > 1 Then
+  '      MsgBox "Multiple ranges or columns have been selected ", vbInformation, "Kutools for Excel"
+  '      GoTo lTwo
+  '  End If
+    If xRg1.CountLarge <> xRg2.CountLarge Then
+       MsgBox "Two selected ranges must have the same numbers of cells ", vbInformation, "Kutools for Excel"
+       GoTo lOne
+    End If
+    xDiffs = (MsgBox("Click Yes to highlight similarities, click No to highlight differences ", vbYesNo + vbQuestion, "Kutools for Excel") = vbNo)
+    Application.ScreenUpdating = False
+    xRg2.Font.ColorIndex = xlAutomatic
+    
+    
+    For i = 1 To xRg1.Count
+        Set xCell1 = xRg1.Cells(i)
+        Set xCell2 = xRg2.Cells(i)
+        HR = Chr(10)
+        stringSetA = Split(xCell1.Value2, HR)
+        stringSetB = Split(xCell2.Value2, HR)
+        
+        
+        If (UBound(stringSetA) <> UBound(stringSetB)) Then
+ 
+             'colour changing code here for set A
+           Console.WriteLine ("Changing colour of set A strings to Blue")
+            xCell1.Characters(0).Font.Color = vbBlue
+            
+        End If
+        
+        
+        ' Step 1 , Change Colour of Set B to Red
+
+        Console.WriteLine ("Changing colour of Set B to red")
+        xCell2.Characters(0).Font.Color = vbRed
+        
+         exactCursorPosition = 0
+        
+         
+        For isun = 0 To UBound(stringSetA)
+
+            stringSetATempStr = stringSetA(isun)
+            wordMatchIndex = 0
+            lastWordMatchIndex = 0
+            If (isun <= UBound(stringSetB)) Then
+
+                stringSetBTempStr = stringSetB(isun)
+                stringArrayOfSetATempStr = Split(stringSetATempStr, " ")
+                For Each word In stringArrayOfSetATempStr
+
+                    If (Len(Trim(word)) <> 0) Then
+                    wordMatchIndex = InStr(stringSetBTempStr, word)
+                    If (wordMatchIndex > lastWordMatchIndex) Then
+
+                        ' colour fill using exactcursor ,wordmatch ,length
+                        Console.WriteLine ("Changing colour to Black from " + exactCursorPosition + wordMatchIndex + ":" + exactCursorPosition + wordMatchIndex + Len(word))
+                         xCell2.Characters(exactCursorPosition + wordMatchIndex, Len(word)).Font.Color = vbBlack
+                        lastWordMatchIndex = wordMatchIndex
+                    End If
+                    End If
+                Next
+
+                exactCursorPosition = exactCursorPosition + Len(stringSetBTempStr) + 1
+            End If
+
+        Next
+
+        
+        
+    Next
+    
+    
+    
+    Application.ScreenUpdating = True
+End Sub
